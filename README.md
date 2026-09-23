@@ -36,7 +36,7 @@ on the same origin — easiest is to point `API` in `app.js` at
   upgrade once the data side is solid.
 - No auth — assumes it's just you.
 
-## Deploying like AirGuard (Vercel + Render)
+## Deploying (Vercel + Render)
 
 **Important:** Vercel's Python functions have no persistent disk, so the
 SQLite file will reset on every deploy (and possibly between invocations).
