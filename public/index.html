@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coursework — dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  :root{
+    --ink:#181A20; --paper:#F6F5F1; --line:#DEDAD0;
+    --school:#233B6E; --school-soft:#E4E9F5;
+    --hobby:#B5651D; --hobby-soft:#F6E7D8;
+  }
+  body{ background:var(--paper); color:var(--ink); font-family:'Inter',sans-serif; }
+  h1,h2,.display{ font-family:'Space Grotesk',sans-serif; }
+  .nav-item{ border-left:3px solid transparent; }
+  .nav-item.active{ border-left-color:var(--ink); background:rgba(0,0,0,0.04); font-weight:600; }
+  .tag-school{ background:var(--school-soft); color:var(--school); }
+  .tag-hobby{ background:var(--hobby-soft); color:var(--hobby); }
+  .task-row{ border-bottom:1px solid var(--line); }
+  .task-row:last-child{ border-bottom:none; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-56 shrink-0 border-r" style="border-color:var(--line)">
+    <div class="px-5 py-6">
+      <div class="display text-lg font-semibold">Coursework</div>
+      <div class="text-sm text-neutral-500">your week, tracked</div>
+    </div>
+    <nav class="mt-2 text-sm">
+      <button class="nav-item active w-full text-left px-5 py-3" data-view="school">School</button>
+      <button class="nav-item w-full text-left px-5 py-3" data-view="hobby">Hobbies &amp; chores</button>
+      <button class="nav-item w-full text-left px-5 py-3" data-view="calendar">Calendar</button>
+      <button class="nav-item w-full text-left px-5 py-3" data-view="week">This week</button>
+      <button class="nav-item w-full text-left px-5 py-3" data-view="stats">Lifetime stats</button>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 px-8 py-6 max-w-3xl">
+    <!-- Quick add -->
+    <form id="agent-form" class="mb-8">
+      <label class="text-sm text-neutral-500 mb-2 block">Tell it what's on your plate</label>
+      <div class="flex gap-2">
+        <input id="agent-input" type="text" placeholder="e.g. homework and a review for csc258, laundry and guitar practice"
+               class="flex-1 border rounded-md px-3 py-2 bg-white" style="border-color:var(--line)" />
+        <button type="submit" class="px-4 py-2 rounded-md text-white" style="background:var(--ink)">Add</button>
+      </div>
+      <p id="agent-status" class="text-sm text-neutral-500 mt-2"></p>
+    </form>
+
+    <!-- School / Hobby views -->
+    <section id="view-school">
+      <h2 class="display text-xl mb-4">School</h2>
+      <div id="school-list" class="bg-white rounded-md border" style="border-color:var(--line)"></div>
+    </section>
+
+    <section id="view-hobby" class="hidden">
+      <h2 class="display text-xl mb-4">Hobbies &amp; chores</h2>
+      <div id="hobby-list" class="bg-white rounded-md border" style="border-color:var(--line)"></div>
+    </section>
+
+    <!-- Calendar -->
+    <section id="view-calendar" class="hidden">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="display text-xl">Calendar</h2>
+      </div>
+      <form id="syllabus-form" class="mb-5 bg-white border rounded-md p-4" style="border-color:var(--line)">
+        <label class="text-sm text-neutral-500 block mb-2">Paste a syllabus to pull out its dates</label>
+        <input id="syllabus-course" placeholder="Course (e.g. csc258)" class="border rounded-md px-3 py-2 mb-2 w-full" style="border-color:var(--line)" />
+        <textarea id="syllabus-text" rows="4" placeholder="Paste syllabus text..." class="border rounded-md px-3 py-2 mb-2 w-full" style="border-color:var(--line)"></textarea>
+        <button type="submit" class="px-4 py-2 rounded-md text-white" style="background:var(--ink)">Extract dates</button>
+      </form>
+      <div id="calendar-list" class="bg-white rounded-md border" style="border-color:var(--line)"></div>
+    </section>
+
+    <!-- This week -->
+    <section id="view-week" class="hidden">
+      <h2 class="display text-xl mb-4">This week</h2>
+      <div class="mb-6">
+        <div class="text-sm text-neutral-500 mb-2">Still open</div>
+        <div id="week-pending" class="bg-white rounded-md border" style="border-color:var(--line)"></div>
+      </div>
+      <div class="mb-6">
+        <div class="text-sm text-neutral-500 mb-2">Finished this week</div>
+        <div id="week-done" class="bg-white rounded-md border" style="border-color:var(--line)"></div>
+      </div>
+      <button id="summary-btn" class="px-4 py-2 rounded-md border" style="border-color:var(--line)">Get my weekly summary</button>
+      <div id="summary-text" class="mt-4 whitespace-pre-wrap text-sm bg-white border rounded-md p-4 hidden" style="border-color:var(--line)"></div>
+    </section>
+
+    <!-- Stats -->
+    <section id="view-stats" class="hidden">
+      <h2 class="display text-xl mb-4">Lifetime stats</h2>
+      <div class="flex items-baseline gap-2 mb-6">
+        <div id="lifetime-count" class="display text-4xl">0</div>
+        <div class="text-neutral-500">tasks finished, all time</div>
+      </div>
+      <canvas id="weekly-chart" height="120"></canvas>
+    </section>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
